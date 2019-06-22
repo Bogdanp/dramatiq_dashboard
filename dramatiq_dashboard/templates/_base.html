@@ -1,0 +1,261 @@
+{% macro nav_item(label, path) -%}
+  {% set uri = make_uri(path) %}
+  <li class="nav__items__item {% if request.path == uri %}nav__items__item--active{% endif %}">
+    <a href="{{ uri }}">{{ label }}</a>
+  </li>
+{%- endmacro %}
+
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block subtitle %}{% endblock %} :: Dramatiq Dashboard</title>
+    <style>
+      :root {
+        --fontstack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        --mono-fontstack: "SF Mono", "Fira Mono", "Consolas", "Inconsolata", monospace;
+        --dark-bg: #1f2530;
+        --light-bg: #252b37;
+        --lighter-bg: #2a303c;
+        --primary: #62e170;
+        --secondary: #61b8ff;
+        --tertiary: #fc7260;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--dark-bg);
+        color: #e6e6e6;
+        font-family: var(--fontstack);
+        font-size: 62.5%;
+        font-size: 1rem;
+        line-height: 1.4;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .container {
+        margin: 0 auto;
+      }
+
+      .nav {
+        background: var(--light-bg);
+        box-shadow: 0 1px 15px 5px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .nav__items {
+        list-style: none;
+        display: grid;
+        grid-auto-flow: column;
+        grid-column-gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(120px, auto));
+      }
+
+      .nav__items__item {}
+      .nav__items__item a {
+        border-bottom: 1px solid transparent;
+        display: block;
+        padding: 24px 0;
+        color: inherit;
+        font-size: 1rem;
+        font-family: var(--mono-fontstack);
+        letter-spacing: 1px;
+        text-align: center;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: color 0.3s;
+      }
+      .nav__items__item a:hover,
+      .nav__items__item--active a {
+        border-bottom: 1px solid #fff;
+        color: #fff;
+      }
+
+      .content {
+      }
+
+      .panel {
+        background: var(--light-bg);
+      }
+      .panel__title {
+        border-bottom: 1px solid var(--lighter-bg);
+        padding: 12px;
+        cursor: default;
+        font-family: var(--mono-fontstack);
+        font-size: 0.8rem;
+        font-weight: 300;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .panel__content {
+      }
+
+      .row {
+        margin: 24px 0 0 0;
+        display: grid;
+        grid-column-gap: 24px;
+        grid-row-gap: 24px;
+      }
+      .row:last-child {
+        margin-bottom: 24px;
+      }
+      .row--no-gap {
+        grid-column-gap: 0;
+        grid-row-gap: 0;
+      }
+
+      .table {
+        width: 100%;
+      }
+      .table td, .table th {
+        border-bottom: 1px solid var(--lighter-bg);
+      }
+      .table tr:last-child td {
+        border-bottom: none;
+      }
+      .table th {
+        padding: 12px;
+        font-family: var(--mono-fontstack);
+        font-size: 0.8rem;
+        font-weight: 300;
+        letter-spacing: 1px;
+        text-align: left;
+        text-transform: uppercase;
+      }
+      .table td {
+        padding: 12px;
+      }
+      .table__subject a {
+        color: #fff;
+        font-size: 1rem;
+        text-decoration: none;
+      }
+      .table__subject a:hover {
+        text-decoration: underline;
+      }
+      .table__subject--mono {
+        font-family: var(--mono-fontstack);
+      }
+      .table__number {
+        width: 50px;
+        text-align: right;
+      }
+      .table__number--primary {
+        color: var(--primary);
+      }
+      .table__number--secondary {
+        color: var(--secondary);
+      }
+      .table__number--tertiary {
+        color: var(--tertiary);
+      }
+      .table__actions {
+        width: 120px;
+        text-align: right;
+      }
+      .table__empty {
+        text-align: center;
+      }
+
+      .tabs {
+        list-style: none;
+        display: grid;
+        background: var(--lighter-bg);
+      }
+      .tabs__tab a {
+        display: block;
+        padding: 24px;
+        font-size: 1rem;
+        text-align: center;
+        text-transform: uppercase;
+        transition: background 0.3s;
+      }
+      .tabs__tab a:hover,
+      .tabs__tab--active {
+        background: var(--light-bg);
+        text-decoration: none;
+      }
+
+      .button {
+        background: var(--lighter-bg);
+        border: none;
+        padding: 12px 24px;
+        display: inline-block;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-family: var(--mono-fontstack);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+      }
+      .button:hover {
+        text-decoration: none;
+        opacity: 1;
+      }
+      .button--primary {
+        background: var(--primary);
+        color: var(--dark-bg);
+      }
+      .button--secondary {
+        background: var(--secondary);
+        color: var(--dark-bg);
+      }
+      .button--tertiary {
+        background: var(--tertiary);
+        color: var(--dark-bg);
+      }
+
+      @media (min-width: 1024px) {
+        .container {
+          width: 1024px;
+        }
+
+        .row {
+          grid-auto-flow: column;
+        }
+
+        .tabs {
+          grid-auto-flow: column;
+        }
+      }
+
+      @media (min-width: 1440px) {
+        .container {
+          width: 1280px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="nav">
+      <div class="container">
+        <ul class="nav__items">
+          {{ nav_item("Dashboard", "") }}
+        </ul>
+      </div>
+    </nav>
+
+    <section class="content">
+      <div class="container">
+        {% block content %}
+        {% endblock %}
+      </div>
+    </section>
+  </body>
+</html>

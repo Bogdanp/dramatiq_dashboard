@@ -1,0 +1,101 @@
+{% extends "_base.html" %}
+{% from "_grid.html" import row, column %}
+{% from "_panel.html" import panel %}
+{% from "_tabs.html" import tabs, tab %}
+
+{% block subtitle %}Queue {{ name }}{% endblock %}
+
+{% macro action(label, uri, params, classes="button--primary") %}
+  <form action="{{ uri }}" method="POST">
+    {# TODO: CSRF #}
+
+    {% for name, value in params.items() %}
+      <input type="hidden" name="{{ name }}" value="{{ value }}">
+    {% endfor %}
+
+    <button class="button {{ classes }}" type="submit">{{ label }}</button>
+  </form>
+{% endmacro %}
+
+{% block content %}
+  {% call row() %}
+    {% call column() %}
+      {% call tabs() %}
+        {{ tab("Standard", make_uri("queues", name), current_tab) }}
+        {{ tab("Delayed", make_uri("queues", name, "delayed"), current_tab) }}
+        {{ tab("Failed", make_uri("queues", name, "failed"), current_tab) }}
+      {% endcall %}
+    {% endcall %}
+  {% endcall %}
+
+  {% call row() %}
+    {% call column() %}
+      {% call panel() %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Created</th>
+              <th>Retries</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for job in jobs %}
+              <tr>
+                <td class="table__subject table__subject--mono">
+                  {{ job }}
+                </td>
+                <td>
+                  <time datetime="{{ job.timestamp|isoformat }}">
+                    {{ job.timestamp|timeago }}
+                  </time>
+                </td>
+                <td class="table__number table__number--tertiary">
+                  {{ job.retries }}
+                </td>
+                <td class="table__actions">
+                  {% call row("row--no-gap") %}
+                    {% if current_tab == "failed" and False %}
+                      {% call column() %}
+                        {{ action("Retry", make_uri("retry-message"), {
+                          "id": job.message_id,
+                          "queue": queue_for_tab,
+                        }, classes="button--secondary")}}
+                      {% endcall %}
+                    {% endif %}
+
+                    {% call column() %}
+                      {{ action("Delete", make_uri("delete-message"), {
+                        "id": job.message_id,
+                        "queue": queue_for_tab,
+                      }, classes="button--tertiary")}}
+                    {% endcall %}
+                  {% endcall %}
+                </td>
+              </tr>
+            {% endfor %}
+
+            {% if not jobs %}
+              <tr>
+                <td class="table__empty" colspan="100">
+                  <em>There are no jobs in this queue.</em>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      {% endcall %}
+    {% endcall %}
+  {% endcall %}
+
+  {% call row() %}
+    {% if cursor %}
+      {% call column() %}
+        <a href="{{ make_uri('queues', name, current_tab, params={'cursor': cursor}) }}" class="button button--primary">
+          Next page
+        </a>
+      {% endcall %}
+    {% endif %}
+  {% endcall %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% macro panel(title=None) %}
+  <section class="panel">
+    {% if title %}
+      <h2 class="panel__title">{{ title }}</h2>
+    {% endif %}
+
+    <div class="panel__content">
+      {{ caller() }}
+    </div>
+  </section>
+{% endmacro %}

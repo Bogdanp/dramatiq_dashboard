@@ -1,0 +1,75 @@
+{% extends "_base.html" %}
+{% from "_grid.html" import row, column %}
+{% from "_panel.html" import panel %}
+
+{% block subtitle %}Dashboard{% endblock %}
+
+{% block content %}
+  {% call row() %}
+    {% call column() %}
+      {% call panel() %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Queue</th>
+              <th>Jobs</th>
+              <th>Delayed</th>
+              <th>Failed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for queue in queues %}
+              <tr>
+                <td class="table__subject">
+                  <a href="{{ make_uri('queues', queue.name) }}">
+                    {{ queue.name }}
+                  </a>
+                </td>
+                <td class="table__number table__number--primary">
+                    {{ queue.jobs }}
+                </td>
+                <td class="table__number table__number--secondary">
+                  {{ queue.jobs_delayed }}
+                </td>
+                <td class="table__number table__number--tertiary">
+                  {{ queue.jobs_dead }}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endcall %}
+    {% endcall %}
+
+    {% call column() %}
+      {% call panel() %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Worker</th>
+              <th>Jobs</th>
+              <th>Last Seen</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for worker in workers %}
+              <tr>
+                <td class="table__subject table__subject--mono">
+                  {{ worker.name }}
+                </td>
+                <td class="table__number table__number--primary">
+                  {{ worker.jobs_in_flight }}
+                </td>
+                <td>
+                  <time datetime="{{ worker.last_seen|isoformat }}">
+                    {{ worker.last_seen|timeago }}
+                  </time>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endcall %}
+    {% endcall %}
+  {% endcall %}
+{% endblock %}

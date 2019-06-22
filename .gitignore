@@ -1,0 +1,11 @@
+/*.egg-info
+/.benchmarks
+/.cache
+/.coverage
+/.pytest_cache
+/.tox
+/benchmark*.svg
+/build
+/dist
+/htmlcov
+__pycache__

@@ -1,0 +1,6 @@
+include README.md
+include setup.cfg
+include setup.py
+
+recursive-include dramatiq_dashboard/redis *.lua
+recursive-include dramatiq_dashboard/templates *.html

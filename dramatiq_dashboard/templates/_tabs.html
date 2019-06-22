@@ -1,0 +1,11 @@
+{% macro tabs() %}
+  <ul class="tabs">
+    {{ caller() }}
+  </ul>
+{% endmacro %}
+
+{% macro tab(label, uri, current_tab) %}
+  <li class="tabs__tab {% if current_tab == label|lower %}tabs__tab--active{% endif %}">
+    <a href="{{ uri }}">{{ label }}</a>
+  </li>
+{% endmacro %}
