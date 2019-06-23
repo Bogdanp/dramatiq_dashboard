@@ -26,6 +26,7 @@ class Worker:
 class Job:
     message_id: str
     message: Message
+    eta: datetime
     timestamp: datetime
     retries: int
 
@@ -34,6 +35,7 @@ class Job:
         return cls(
             message_id=message.options.get("redis_message_id", message.message_id),
             message=message,
+            eta=datetime.utcfromtimestamp(message.options.get("eta", message.message_timestamp) / 1000),
             timestamp=datetime.utcfromtimestamp(message.message_timestamp / 1000),
             retries=message.options.get("retries", 0),
         )
@@ -80,6 +82,15 @@ class RedisInterface:
             ))
 
         return sorted(workers, key=attrgetter("name"))
+
+    def get_queue(self, queue_name):
+        for name, jobs, jobs_delayed, jobs_dead in self.do_get_queues_stats(queue_name):
+            return Queue(
+                name=name.decode("utf-8"),
+                jobs=jobs,
+                jobs_delayed=jobs_delayed,
+                jobs_dead=jobs_dead,
+            )
 
     def get_jobs(self, queue_name, cursor=0):
         next_cursor, messages_data = self.broker.client.hscan(

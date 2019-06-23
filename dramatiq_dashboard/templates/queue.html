@@ -3,7 +3,7 @@
 {% from "_panel.html" import panel %}
 {% from "_tabs.html" import tabs, tab %}
 
-{% block subtitle %}{{ name }}{% endblock %}
+{% block subtitle %}{{ queue.name }}{% endblock %}
 
 {% macro action(label, uri, params, classes="button--primary") %}
   <form action="{{ uri }}" method="POST">
@@ -21,9 +21,17 @@
   {% call row() %}
     {% call column() %}
       {% call tabs() %}
-        {{ tab("Standard", make_uri("queues", name), current_tab) }}
-        {{ tab("Delayed", make_uri("queues", name, "delayed"), current_tab) }}
-        {{ tab("Failed", make_uri("queues", name, "failed"), current_tab) }}
+        {% call tab("standard", make_uri("queues", queue.name), current_tab) %}
+          Standard (<em class="em em--primary">{{ queue.jobs|short }}</em>)
+        {% endcall %}
+
+        {% call tab("delayed", make_uri("queues", queue.name, "delayed"), current_tab) %}
+          Delayed (<em class="em em--secondary">{{ queue.jobs_delayed|short }}</em>)
+        {% endcall %}
+
+        {% call tab("failed", make_uri("queues", queue.name, "failed"), current_tab) %}
+          Failed (<em class="em em--tertiary">{{ queue.jobs_dead|short }}</em>)
+        {% endcall %}
       {% endcall %}
     {% endcall %}
   {% endcall %}
@@ -35,6 +43,7 @@
           <thead>
             <tr>
               <th>Job</th>
+              <th>ETA</th>
               <th>Created</th>
               <th>Retries</th>
               <th>Actions</th>
@@ -45,6 +54,11 @@
               <tr>
                 <td class="table__subject table__subject--mono">
                   {{ job }}
+                </td>
+                <td>
+                  <time datetime="{{ job.eta|isoformat }}">
+                    {{ job.eta|timeago }}
+                  </time>
                 </td>
                 <td>
                   <time datetime="{{ job.timestamp|isoformat }}">
@@ -92,7 +106,7 @@
   {% call row() %}
     {% if cursor %}
       {% call column() %}
-        <a href="{{ make_uri('queues', name, current_tab, params={'cursor': cursor}) }}" class="button button--primary">
+        <a href="{{ make_uri('queues', queue.name, current_tab, params={'cursor': cursor}) }}" class="button button--primary">
           Next page
         </a>
       {% endcall %}

@@ -4,7 +4,7 @@ import jinja2
 from dramatiq.common import dq_name, q_name, xq_name
 
 from .csrf import csrf_protect, render_csrf_token
-from .filters import isoformat, timeago
+from .filters import isoformat, short, timeago
 from .http import HTTP_302, HTTP_404, HTTP_405, App, Response, handler, templated
 from .interface import RedisInterface
 
@@ -44,6 +44,7 @@ class DashboardApp(App):
         )
         self.templates.filters.update({
             "isoformat": isoformat,
+            "short": short,
             "timeago": timeago,
         })
         self.templates.globals.update({
@@ -76,9 +77,10 @@ class DashboardApp(App):
             "failed": xq_name(name),
         }[current_tab]
 
+        queue = self.iface.get_queue(q_name(name))
         next_cursor, jobs = self.iface.get_jobs(queue_for_tab, cursor)
         return {
-            "name": name,
+            "queue": queue,
             "jobs": jobs,
             "cursor": next_cursor,
             "current_tab": current_tab,
