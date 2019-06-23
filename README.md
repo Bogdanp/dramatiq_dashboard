@@ -7,7 +7,7 @@ It comes in the form of a WSGI middleware, with as few dependencies as
 possible (`dramatiq`, `jinja2` and `redis`) so it's super easy to plug
 into whatever web application you have.
 
-![screencast](/media/screencast.gif)
+![screencast](https://media.defn.io/dramatiq-dashboard-screencast.gif)
 
 ## Installation
 
