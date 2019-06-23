@@ -26,13 +26,13 @@
                   </a>
                 </td>
                 <td class="table__number table__number--primary">
-                    {{ queue.jobs }}
+                  {{ queue.jobs|short }}
                 </td>
                 <td class="table__number table__number--secondary">
-                  {{ queue.jobs_delayed }}
+                  {{ queue.jobs_delayed|short }}
                 </td>
                 <td class="table__number table__number--tertiary">
-                  {{ queue.jobs_dead }}
+                  {{ queue.jobs_dead|short }}
                 </td>
               </tr>
             {% endfor %}
@@ -58,7 +58,7 @@
                   {{ worker.name }}
                 </td>
                 <td class="table__number table__number--primary">
-                  {{ worker.jobs_in_flight }}
+                  {{ worker.jobs_in_flight|short }}
                 </td>
                 <td>
                   <time datetime="{{ worker.last_seen|isoformat }}">

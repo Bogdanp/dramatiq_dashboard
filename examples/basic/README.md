@@ -17,7 +17,11 @@ In one terminal, run the web server:
 
 In another, run dramatiq:
 
-    dramatiq app
+    dramatiq app -p 2 -t 2
+
+Visit https://localhost:8000/crawl?uri=news.ycombinator.com to start
+the crawler then visit https://localhost:8000/drama/ to see the
+dashboard.
 
 
 [dramatiq]: https://dramatiq.io
