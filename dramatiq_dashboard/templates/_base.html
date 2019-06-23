@@ -1,6 +1,6 @@
 {% macro nav_item(label, path) -%}
   {% set uri = make_uri(path) %}
-  <li class="nav__items__item {% if request.path == uri %}nav__items__item--active{% endif %}">
+  <li class="nav__items__item {% if uri.endswith(request.path) %}nav__items__item--active{% endif %}">
     <a href="{{ uri }}">{{ label }}</a>
   </li>
 {%- endmacro %}
