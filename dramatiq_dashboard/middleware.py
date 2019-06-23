@@ -13,7 +13,8 @@ class DashboardMiddleware:
     def __call__(self, environ, start_response):
         path = environ.get("PATH_INFO", "")
         if path.startswith(self.prefix):
-            return self.dashboard_app(path[len(self.prefix):], environ, start_response)
+            app_environ = {**environ, "PATH_INFO": path[len(self.prefix):]}
+            return self.dashboard_app(app_environ, start_response)
 
         return self.app(environ, start_response)
 

@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass, field
 from io import BytesIO
 from typing import Dict, Union
@@ -10,10 +11,19 @@ HTTP_404 = "404 Not Found"
 HTTP_405 = "405 Method Not Allowed"
 
 
-def make_headers():
-    return [
-        ("Content-type", "text/html; charset=utf-8")
-    ]
+def format_environ_header(name):
+    return name.lower().replace("http_", "").replace("_", "-")
+
+
+def make_request_headers(environ):
+    return {
+        "content-length": environ.get("CONTENT_LENGTH", "0"),
+        "content-type": environ.get("CONTENT_TYPE", "application/octet-stream"),
+        **{
+            format_environ_header(name): value
+            for name, value in environ.items() if name.startswith("HTTP_")
+        }
+    }
 
 
 @dataclass
@@ -32,14 +42,7 @@ class Request:
             method=environ["REQUEST_METHOD"],
             path=environ["PATH_INFO"],
             params=dict(parse_qsl(environ["QUERY_STRING"])),
-            headers={
-                "content-length": environ.get("CONTENT_LENGTH", "0"),
-                "content-type": environ.get("CONTENT_TYPE", "application/octet-stream"),
-                **{
-                    name.lower().replace("HTTP_", "").replace("_", "-"): value
-                    for name, value in environ.items() if name.startswith("HTTP_")
-                }
-            },
+            headers=make_request_headers(environ),
             body=environ["wsgi.input"],
         )
 
@@ -47,15 +50,23 @@ class Request:
     def post_data(self):
         if self._post_data is None:
             parsed_data = parse_qsl(self.body.read(int(self.headers.get("content-length"))))
-            self._post_data = {name.decode("utf-8"): value.decode("utf-8") for name, value in parsed_data}
+            self._post_data = {
+                name.decode("utf-8"): value.decode("utf-8") for name, value in parsed_data
+            }
 
         return self._post_data
+
+
+def make_response_headers():
+    return [
+        ("Content-type", "text/html; charset=utf-8")
+    ]
 
 
 @dataclass
 class Response:
     status: str = HTTP_200
-    headers: list = field(default_factory=make_headers)
+    headers: list = field(default_factory=make_response_headers)
     content: Union[bytes, str, BytesIO] = field(default_factory=BytesIO)
 
     def __iter__(self):
@@ -69,16 +80,35 @@ class Response:
             return self.content
 
 
-def handler(fn):
-    def wrapper(self, environ, start_response, *args, **kwargs):
+def make_response(value):
+    if isinstance(value, str):
+        return Response(content=value)
+
+    elif isinstance(value, tuple) and len(value) == 2:
+        return Response(status=value[0], content=value[1])
+
+    else:
+        return value
+
+
+class App:
+    def __init__(self):
+        self._dispatch_table = []
+
+    def add_route(self, pattern, handler):
+        self._dispatch_table.append((re.compile(f"^{pattern}/?$"), handler))
+
+    def __call__(self, environ, start_response):
         request = Request.from_environ(environ)
-        response = fn(self, request, *args, **kwargs)
-        if isinstance(response, str):
-            response = Response(content=response)
+        for path_re, path_handler in self._dispatch_table:
+            match = path_re.match(request.path)
+            if match:
+                return path_handler(request, start_response, **match.groupdict())
 
-        elif isinstance(response, tuple) and len(response) == 2:
-            response = Response(status=response[0], content=response[1])
 
+def handler(fn):
+    def wrapper(self, request, start_response, *args, **kwargs):
+        response = make_response(fn(self, request, *args, **kwargs))
         start_response(response.status, response.headers)
         return response
     return wrapper

@@ -1,26 +1,30 @@
-import re
 from urllib.parse import urlencode
 
 import jinja2
 from dramatiq.common import dq_name, q_name, xq_name
 
+from .csrf import csrf_protect, render_csrf_token
 from .filters import isoformat, timeago
-from .http import HTTP_302, HTTP_404, HTTP_405, Response, handler, templated
+from .http import HTTP_302, HTTP_404, HTTP_405, App, Response, handler, templated
 from .interface import RedisInterface
 
 
-class DashboardApp:
-    def __init__(self, broker, prefix):
-        self.iface = RedisInterface(broker)
-        self.prefix = prefix
+def make_uri_maker(prefix):
+    def make_uri(*path_segments, params=None):
+        uri = f"{prefix}/{'/'.join(str(segment) for segment in path_segments)}"
+        if params is not None:
+            uri += f"?{urlencode(params)}"
 
-        self.dispatch_table = [
-            (re.compile(f"^/?$"), self.dashboard),
-            (re.compile(f"^/queues/(?P<name>[^/]+)/?$"), self.queue),
-            (re.compile(f"^/queues/(?P<name>[^/]+)/(?P<current_tab>(standard|delayed|failed))/?$"), self.queue),
-            (re.compile(f"^/delete-message/?$"), self.delete_message),
-            (re.compile(f"^.*$"), self.not_found),
-        ]
+        return uri
+    return make_uri
+
+
+class DashboardApp(App):
+    def __init__(self, broker, prefix):
+        super().__init__()
+
+        self.iface = RedisInterface(broker)
+        self.make_uri = make_uri = make_uri_maker(prefix)
 
         self.templates = jinja2.Environment(
             loader=jinja2.PackageLoader("dramatiq_dashboard", "templates"),
@@ -32,21 +36,15 @@ class DashboardApp:
             "timeago": timeago,
         })
         self.templates.globals.update({
-            "make_uri": self.make_uri,
+            "csrf_token": render_csrf_token,
+            "make_uri": make_uri,
         })
 
-    def __call__(self, path, environ, start_response):
-        for path_re, path_handler in self.dispatch_table:
-            match = path_re.match(path)
-            if match:
-                return path_handler(environ, start_response, **match.groupdict())
-
-    def make_uri(self, *path_segments, params=None):
-        uri = f"{self.prefix}/{'/'.join(str(segment) for segment in path_segments)}"
-        if params is not None:
-            uri += f"?{urlencode(params)}"
-
-        return uri
+        self.add_route("/", self.dashboard)
+        self.add_route("/queues/(?P<name>[^/]+)", self.queue)
+        self.add_route("/queues/(?P<name>[^/]+)/(?P<current_tab>(standard|delayed|failed))", self.queue)
+        self.add_route("/delete-message", self.delete_message)
+        self.add_route(".*", self.not_found)
 
     @handler
     @templated("dashboard.html")
@@ -57,6 +55,7 @@ class DashboardApp:
         }
 
     @handler
+    @csrf_protect
     @templated("queue.html")
     def queue(self, req, *, name, current_tab="standard"):
         cursor = int(req.params.get("cursor", 0))
@@ -76,6 +75,7 @@ class DashboardApp:
         }
 
     @handler
+    @csrf_protect
     def delete_message(self, req):
         if req.method != "POST":
             return HTTP_405, "Expected a POST request."
