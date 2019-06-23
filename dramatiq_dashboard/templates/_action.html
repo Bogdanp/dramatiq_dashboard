@@ -1,0 +1,11 @@
+{% macro action(label, uri, params, classes="button--primary") %}
+  <form action="{{ uri }}" method="POST">
+    {{ csrf_token()|safe }}
+
+    {% for name, value in params.items() %}
+      <input type="hidden" name="{{ name }}" value="{{ value }}">
+    {% endfor %}
+
+    <button class="button {{ classes }}" type="submit">{{ label }}</button>
+  </form>
+{% endmacro %}

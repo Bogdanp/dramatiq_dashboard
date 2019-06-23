@@ -1,0 +1,85 @@
+{% extends "_base.html" %}
+{% from "_action.html" import action %}
+{% from "_grid.html" import row, column %}
+{% from "_panel.html" import panel %}
+{% from "_timestamp.html" import timestamp %}
+
+{% block subtitle %}Job {{ job.message_id }} in {{ queue.name }}{% endblock %}
+
+{% block content %}
+  {% call row() %}
+    {% call column() %}
+      {% call panel("Job") %}
+        <table class="table">
+          <tbody>
+            <tr>
+              <th>Canonical id</th>
+              <td>{{ job.message.message_id }}</td>
+            </tr>
+            <tr>
+              <th>Redis id</th>
+              <td>{{ job.message_id }}</td>
+            </tr>
+            <tr>
+              <th>Queue</th>
+              <td>{{ job.queue_name }} ({{ queue_for_tab }})</td>
+            </tr>
+            <tr>
+              <th>Actor</th>
+              <td><pre>{{ job.actor_name }}</pre></td>
+            </tr>
+            <tr>
+              <th>Args</th>
+              <td>
+                <ul>
+                  {% for arg in job.args %}
+                    <li><pre>{{ arg|pformat }}</pre></li>
+                  {% endfor %}
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <th>Kwargs</th>
+              <td>
+                <ul>
+                  {% for name, value in job.kwargs.items() %}
+                    <li><strong>{{ name }}</strong>=<pre>{{ value|pformat }}</pre></li>
+                  {% endfor %}
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <th>ETA</th>
+              <td>
+                {{ timestamp(job.eta) }}
+              </td>
+            </tr>
+            <tr>
+              <th>Created</th>
+              <td>
+                {{ timestamp(job.timestamp) }}
+              </td>
+            </tr>
+            {% for name, value in job.options.items() %}
+              {% if name != "redis_message_id" %}
+                <tr>
+                  <th>{{ name|capitalize }}</th>
+                  <td><pre>{{ value }}</pre></td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endcall %}
+    {% endcall %}
+  {% endcall %}
+
+  {% call row() %}
+    {% call column() %}
+      {{ action("Delete", make_uri("delete-message"), {
+        "id": job.message_id,
+        "queue": queue_for_tab,
+      }, classes="button--tertiary")}}
+    {% endcall %}
+  {% endcall %}
+{% endblock %}

@@ -4,6 +4,7 @@ from datetime import datetime
 from operator import attrgetter
 from os import path
 
+from dramatiq.common import dq_name, xq_name
 from dramatiq.message import Message
 
 
@@ -103,9 +104,9 @@ class RedisInterface:
         jobs = [Job.from_message(Message.decode(data)) for data in messages_data.values()]
         return next_cursor, sorted(jobs, key=attrgetter("timestamp"), reverse=True)
 
-    def get_message(self, queue_name, message_id):
+    def get_job(self, queue_name, message_id):
         data = self.broker.client.hget(self.qualify(f"{queue_name}.msgs"), message_id)
-        return data and Message.decode(data)
+        return data and Job.from_message(Message.decode(data))
 
     def delete_message(self, queue_name, message_id):
         self.do_delete_message(queue_name, message_id)

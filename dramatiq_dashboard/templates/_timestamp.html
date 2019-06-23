@@ -1,0 +1,5 @@
+{% macro timestamp(dt) %}
+  <time datetime="{{ dt|isoformat }}">
+    {{ dt|timeago }}
+  </time>
+{% endmacro %}

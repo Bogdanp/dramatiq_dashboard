@@ -34,7 +34,7 @@ def start(uri: QueryParam):
         uri = f"http://{uri}"
 
     crawl.send(uri)
-    return "Task enqueued!"
+    return "Message sent!"
 
 
 app = App(

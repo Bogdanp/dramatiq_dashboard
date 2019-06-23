@@ -121,10 +121,17 @@ def handler(fn):
 def templated(template_name):
     def decorator(fn):
         def wrapper(self, request, *args, **kwargs):
-            context = {
-                "request": request,
-                **fn(self, request, *args, **kwargs)
-            }
+            response = fn(self, request, *args, **kwargs)
+            if isinstance(response, Response):
+                return response
+
+            context = {"request": request, **response}
             return self.templates.get_template(template_name).render(context)
         return wrapper
     return decorator
+
+
+def redirect(uri):
+    response = Response(status=HTTP_302)
+    response.add_header("location", uri)
+    return response

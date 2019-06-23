@@ -1,21 +1,11 @@
 {% extends "_base.html" %}
+{% from "_action.html" import action %}
 {% from "_grid.html" import row, column %}
 {% from "_panel.html" import panel %}
 {% from "_tabs.html" import tabs, tab %}
+{% from "_timestamp.html" import timestamp %}
 
 {% block subtitle %}{{ queue.name }}{% endblock %}
-
-{% macro action(label, uri, params, classes="button--primary") %}
-  <form action="{{ uri }}" method="POST">
-    {{ csrf_token()|safe }}
-
-    {% for name, value in params.items() %}
-      <input type="hidden" name="{{ name }}" value="{{ value }}">
-    {% endfor %}
-
-    <button class="button {{ classes }}" type="submit">{{ label }}</button>
-  </form>
-{% endmacro %}
 
 {% block content %}
   {% call row() %}
@@ -53,17 +43,15 @@
             {% for job in jobs %}
               <tr>
                 <td class="table__subject table__subject--mono">
-                  {{ job }}
+                  <a href="{{ make_uri('queues', queue.name, current_tab, job.message_id) }}">
+                    {{ job }}
+                  </a>
                 </td>
                 <td>
-                  <time datetime="{{ job.eta|isoformat }}">
-                    {{ job.eta|timeago }}
-                  </time>
+                  {{ timestamp(job.eta) }}
                 </td>
                 <td>
-                  <time datetime="{{ job.timestamp|isoformat }}">
-                    {{ job.timestamp|timeago }}
-                  </time>
+                  {{ timestamp(job.timestamp) }}
                 </td>
                 <td class="table__number table__number--tertiary">
                   {{ job.retries }}
