@@ -6,7 +6,7 @@ from dramatiq.common import dq_name, q_name, xq_name
 
 from .csrf import csrf_protect, render_csrf_token
 from .filters import isoformat, short, timeago
-from .http import HTTP_302, HTTP_404, HTTP_405, HTTP_410, App, Response, handler, redirect, templated
+from .http import HTTP_404, HTTP_405, HTTP_410, App, handler, redirect, templated
 from .interface import Job, RedisInterface
 
 
