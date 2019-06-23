@@ -9,6 +9,7 @@ HTTP_302 = "302 Found"
 HTTP_403 = "403 Forbidden"
 HTTP_404 = "404 Not Found"
 HTTP_405 = "405 Method Not Allowed"
+HTTP_410 = "410 Gone"
 
 
 def format_environ_header(name):
@@ -68,6 +69,9 @@ class Response:
     status: str = HTTP_200
     headers: list = field(default_factory=make_response_headers)
     content: Union[bytes, str, BytesIO] = field(default_factory=BytesIO)
+
+    def add_header(self, name, value):
+        self.headers.append((name, value))
 
     def __iter__(self):
         if isinstance(self.content, str):

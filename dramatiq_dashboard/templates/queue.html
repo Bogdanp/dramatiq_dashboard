@@ -70,9 +70,9 @@
                 </td>
                 <td class="table__actions">
                   {% call row("row--no-gap") %}
-                    {% if current_tab == "failed" and False %}
+                    {% if current_tab == "failed" %}
                       {% call column() %}
-                        {{ action("Retry", make_uri("retry-message"), {
+                        {{ action("Requeue", make_uri("requeue-message"), {
                           "id": job.message_id,
                           "queue": queue_for_tab,
                         }, classes="button--secondary")}}

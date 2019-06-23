@@ -5,7 +5,7 @@ from dramatiq.common import dq_name, q_name, xq_name
 
 from .csrf import csrf_protect, render_csrf_token
 from .filters import isoformat, short, timeago
-from .http import HTTP_302, HTTP_404, HTTP_405, App, Response, handler, templated
+from .http import HTTP_302, HTTP_404, HTTP_405, HTTP_410, App, Response, handler, templated
 from .interface import RedisInterface
 
 
@@ -34,6 +34,7 @@ class DashboardApp(App):
     def __init__(self, broker, prefix):
         super().__init__()
 
+        self.broker = broker
         self.iface = RedisInterface(broker)
         self.make_uri = make_uri = make_uri_maker(prefix)
 
@@ -56,6 +57,7 @@ class DashboardApp(App):
         self.add_route("/queues/(?P<name>[^/]+)", self.queue)
         self.add_route("/queues/(?P<name>[^/]+)/(?P<current_tab>(standard|delayed|failed))", self.queue)
         self.add_route("/delete-message", self.delete_message)
+        self.add_route("/requeue-message", self.requeue_message)
         self.add_route(".*", self.not_found)
 
     @handler
@@ -96,12 +98,36 @@ class DashboardApp(App):
         queue = req.post_data["queue"]
         message_id = req.post_data["id"]
         self.iface.delete_message(queue, message_id)
-        return Response(
-            status=HTTP_302,
-            headers=[
-                ("location", self.make_uri("queues", q_name(queue), tab_from_q_name(queue)))
-            ]
-        )
+
+        queue_uri = self.make_uri("queues", q_name(queue), tab_from_q_name(queue))
+        response = Response(status=HTTP_302)
+        response.add_header("location", queue_uri)
+        return response
+
+    @handler
+    @csrf_protect
+    def requeue_message(self, req):
+        if req.method != "POST":
+            return HTTP_405, "Expected a POST request."
+
+        queue = req.post_data["queue"]
+        message_id = req.post_data["id"]
+        message = self.iface.get_message(queue, message_id)
+        if not message:
+            return HTTP_410, "The requested message no longer exists."
+
+        self.iface.delete_message(queue, message_id)
+        message_copy = self.broker.enqueue(message.copy(
+            queue_name=q_name(queue),
+            options={
+                "eta": message.message_timestamp,
+                "retries": 0
+            },
+        ))
+        message_uri = self.make_uri("queues", q_name(queue), tab_from_q_name(queue))
+        response = Response(status=HTTP_302)
+        response.add_header("location", message_uri)
+        return response
 
     @handler
     def not_found(self, req):
