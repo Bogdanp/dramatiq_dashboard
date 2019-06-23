@@ -19,6 +19,17 @@ def make_uri_maker(prefix):
     return make_uri
 
 
+def tab_from_q_name(name):
+    if name == dq_name(name):
+        return "delayed"
+
+    elif name == xq_name(name):
+        return "failed"
+
+    else:
+        return "standard"
+
+
 class DashboardApp(App):
     def __init__(self, broker, prefix):
         super().__init__()
@@ -86,7 +97,7 @@ class DashboardApp(App):
         return Response(
             status=HTTP_302,
             headers=[
-                ("location", self.make_uri("queues", q_name(queue)))
+                ("location", self.make_uri("queues", q_name(queue), tab_from_q_name(queue)))
             ]
         )
 
