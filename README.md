@@ -34,10 +34,10 @@ project.  There are three ways in which you can do this right now:
 
 ## Quickstart
 
+#### Run the doashboard on top of existing WSGI app
 ```python
 # Assuming at some point you instantiate your app.
 app = create_wsgi_application()
-
 
 # Import the library, create the middleware and wrap your app with it.
 import dramatiq_dashboard
@@ -45,8 +45,30 @@ import dramatiq_dashboard
 dashboard_middleware = dramatiq_dashboard.make_wsgi_middleware("/drama")
 app = dashboard_middleware(app)
 ```
-
 Run your app, visit `/drama` and you should see the dashboard.
+
+#### Run the doashboard as standalone webserver
+
+If you don't want to wrap an existing WSGI app, you can also run the dashboard
+as a standalone server. Just install the WSGI server of your choice (e.g. uWSGi,
+gunicorn, bjoern, etc), setup the Redis broker, and then run  `DashboardApp`directly.
+
+For example, to serve the dashboard on `http://127.0.0.1:8080` using the 
+`bjoern` WSGI server and a redis server on `17.0.0.1:6379`, run the following:
+
+```python
+# pip install dramatiq[redis] dramatiq_dasboard bjoern
+import bjoern
+import dramatiq
+from dramatiq.brokers.redis import RedisBroker
+from dramatiq_dashboard.application import DashboardApp
+
+broker = RedisBroker(host='127.0.0.1', port=6379)
+dramatiq.set_broker(broker)
+app = DashboardApp(broker=broker, prefix='')
+bjoern.run(app, '127.0.0.1', 8080)
+```
+Then visit http://127.0.0.1:8080/ to see the running dashboard.
 
 ## License
 
