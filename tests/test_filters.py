@@ -39,7 +39,6 @@ def test_short(n, expected):
         (timedelta(days=9), "1w ago"),
         (timedelta(weeks=-5), "in 1M"),
         (timedelta(weeks=5), "1M ago"),
-        (timedelta(weeks=-52), "in 1Y"),
         (timedelta(weeks=52), "1Y ago"),
     ]
 )
