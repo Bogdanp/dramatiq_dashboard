@@ -42,7 +42,7 @@ class Request:
         return cls(
             method=environ["REQUEST_METHOD"],
             path=environ["PATH_INFO"],
-            params=dict(parse_qsl(environ["QUERY_STRING"])),
+            params=dict(parse_qsl(environ.get("QUERY_STRING", ''))),
             headers=make_request_headers(environ),
             body=environ["wsgi.input"],
         )
