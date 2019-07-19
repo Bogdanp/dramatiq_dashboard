@@ -4,7 +4,6 @@ from datetime import datetime
 from operator import attrgetter
 from os import path
 
-from dramatiq.common import dq_name, xq_name
 from dramatiq.message import Message
 
 
