@@ -47,6 +47,18 @@ class Request:
             body=environ["wsgi.input"],
         )
 
+    @classmethod
+    def test_request(cls, **kwargs):
+        request_data = {
+            'method': 'GET',
+            'path': '/',
+            'params': {},
+            'headers': {},
+            'body': BytesIO(b'')
+        }
+        request_data.update(kwargs)
+        return cls(**request_data)
+
     @property
     def post_data(self):
         if self._post_data is None:

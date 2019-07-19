@@ -21,7 +21,7 @@ def generate_csrf_token():
 def lookup_csrf_token(request):
     cookies = request.headers.get("cookie")
     if cookies:
-        match = _CSRF_COOKIE_RE.match(cookies)
+        match = _CSRF_COOKIE_RE.search(cookies)
         if match:
             return match.group(1)
 
