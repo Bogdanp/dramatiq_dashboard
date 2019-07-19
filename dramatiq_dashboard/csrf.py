@@ -5,7 +5,7 @@ from threading import local
 from .http import HTTP_403, make_response
 
 _CSRF_COOKIE = "__dd_csrf"
-_CSRF_COOKIE_RE = re.compile(f"{_CSRF_COOKIE}=([^ ]+)")
+_CSRF_COOKIE_RE = re.compile(f"{_CSRF_COOKIE}=([^;]+)")
 _CSRF_STATE = local()
 
 
