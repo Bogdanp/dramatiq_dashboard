@@ -61,6 +61,10 @@ discovered using this approach.  You'll have to either add each one of
 them manually to your broker or import and pass your application's
 broker to `DashboardApp`.*
 
+### Run the dashboard in a Docker container
+
+Please refer to: https://github.com/drpancake/dramatiq-dashboard-docker
+
 ## License
 
 dramatiq_dashboard is licensed under the LGPL.  Please see [COPYING]
