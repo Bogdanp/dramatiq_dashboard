@@ -73,7 +73,7 @@ elseif command == "get_workers" then
             end
         end
 
-        if next_cursor == cursor then
+        if next_cursor == "0" then
             break
         end
 
