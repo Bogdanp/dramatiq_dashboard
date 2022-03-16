@@ -25,12 +25,11 @@ with open(rel("dramatiq_dashboard", "__init__.py"), "r") as f:
 dependencies = [
     "dataclasses; python_version < '3.7'",
     "dramatiq[redis]>=1.6,<2.0",
-    "jinja2>=2,<3",
+    "jinja2>=2",
     "redis>=2.0,<5.0",
 ]
 
-extra_dependencies = {
-}
+extra_dependencies = {}
 
 extra_dependencies["all"] = list(set(sum(extra_dependencies.values(), [])))
 extra_dependencies["dev"] = extra_dependencies["all"] + [
@@ -38,19 +37,16 @@ extra_dependencies["dev"] = extra_dependencies["all"] + [
     "alabaster",
     "sphinx<1.8",
     "sphinxcontrib-napoleon",
-
     # Linting
     "flake8",
     "flake8-bugbear",
     "flake8-quotes",
     "isort",
-
     # Misc
     "bumpversion",
     "hiredis",
     "twine",
     "wheel",
-
     # Testing
     "pytest",
     "pytest-benchmark[histogram]",
@@ -66,9 +62,7 @@ setup(
     description="A dashboard for Dramatiq (Redis-only!).",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    packages=[
-        "dramatiq_dashboard"
-    ],
+    packages=["dramatiq_dashboard"],
     include_package_data=True,
     install_requires=dependencies,
     python_requires=">=3.6",

@@ -2,3 +2,5 @@ dramatiq[redis,watch]
 dramatiq_dashboard
 gunicorn
 molten
+markupsafe==2.0.1
+jinja2==3.0.3
