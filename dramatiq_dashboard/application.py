@@ -63,6 +63,7 @@ class DashboardApp(App):
             "make_uri": make_uri,
         })
 
+        self.add_route("", self.dashboard)
         self.add_route("/", self.dashboard)
         self.add_route("/queues/(?P<name>[^/]+)", self.queue)
         self.add_route("/queues/(?P<name>[^/]+)/(?P<current_tab>(standard|delayed|failed))", self.queue)
@@ -153,4 +154,5 @@ class DashboardApp(App):
 
     @handler
     def not_found(self, req):
-        return HTTP_404, "Not Found"
+        path=req.get('path', None)
+        return HTTP_404, f"dramatiq_dashboard: path {path} not found"
